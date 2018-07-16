@@ -6,6 +6,9 @@ Implementation of an RPC (Remote Procedure Call Protocal) Framework.
 ## What is Remote Procedure Call Protocal?
 In distributed computing, a remote procedure call (RPC) is when a computer program causes a procedure (subroutine) to execute in a different address space (commonly on another computer on a shared network), which is coded as if it were a normal (local) procedure call, without the programmer explicitly coding the details for the remote interaction. [1, wikipedia]
 
+## Applications
+[Apache Dubbo™ (incubating) is a high-performance, java based open source RPC framework.](https://dubbo.incubator.apache.org/#!/?lang=en-us)
+
 ## Required Components
     java.net.ServerSocket
     java.net.Socket
