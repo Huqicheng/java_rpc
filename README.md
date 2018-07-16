@@ -57,7 +57,7 @@ try {
 ## Refer the Service by the Consumer
 
 ```java
-// JDK proxy
+// JDK proxy (return an invokable instance of the interfaceClass)
 T proxy = (T)Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[] {interfaceClass}, 
@@ -69,12 +69,18 @@ T proxy = (T)Proxy.newProxyInstance(
                         try {
                             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                             try {
-                                // send requests
+                                // Send Requests
                                 System.out.println("\nClient send the request ： ");
+                                
+                                // Write method name
                                 output.writeUTF(method.getName());
                                 System.out.println("methodName : " + method.getName());
+                                
+                                // write parameterTYpes
                                 output.writeObject(method.getParameterTypes());
                                 System.out.println("parameterTypes : " + Arrays.toString(method.getParameterTypes()));
+                                
+                                // write arguments
                                 output.writeObject(arguments);
                                 System.out.println("arguments : " + Arrays.toString(arguments));
 
