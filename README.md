@@ -1,4 +1,4 @@
-java_rpc
+Java RPC
 ------------------------------------------------
 Implementation of an RPC (Remote Procedure Call Protocal) Framework.
 
