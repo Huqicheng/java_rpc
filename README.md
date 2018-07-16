@@ -12,38 +12,92 @@ In distributed computing, a remote procedure call (RPC) is when a computer progr
     java.lang.reflect.InvocationHandler
     java.lang.reflect.Proxy
   
-## How to export a service to providers?
+## Export a Service by the Provider
 
 ```java
 ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 try {
     System.out.println("\nServer get request： ");
-    // which method did the provider call?
+    // which method did the consumer call?
     String methodName = input.readUTF();
     System.out.println("methodName : " + methodName);
+    
+    // what's the parameter types for this calling?
     Class<?>[] parameterTypes = (Class<?>[])input.readObject();
     
     System.out.println("parameterTypes : " + Arrays.toString(parameterTypes));
     
+    // what's the values of each parameter?
     Object[] arguments = (Object[])input.readObject();
+    
     System.out.println("arguments : " + Arrays.toString(arguments));
 
 
     /* Server handles the request*/
     ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
     try {
-        // Reflect
+        // get the method from Service with the methodName and parameterTypes given by the consumer
         Method method = service.getClass().getMethod(methodName,parameterTypes);
+        
+        // invoke the method, and get the output
         Object result = method.invoke(service, arguments);
         
         System.out.println("\nServer response ：");
         System.out.println("result : " + result);
         
+        // respond to the consumer
         output.writeObject(result);
     } catch (Throwable t) {
         output.writeObject(t);
     } finally {
         output.close();
 }
+```
+
+## Refer the Service by the Consumer
+
+```java
+// JDK proxy
+T proxy = (T)Proxy.newProxyInstance(
+                interfaceClass.getClassLoader(),
+                new Class<?>[] {interfaceClass}, 
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
+                        // create a socket client
+                        Socket socket = new Socket(host, port);
+                        try {
+                            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                            try {
+                                // send requests
+                                System.out.println("\nClient send the request ： ");
+                                output.writeUTF(method.getName());
+                                System.out.println("methodName : " + method.getName());
+                                output.writeObject(method.getParameterTypes());
+                                System.out.println("parameterTypes : " + Arrays.toString(method.getParameterTypes()));
+                                output.writeObject(arguments);
+                                System.out.println("arguments : " + Arrays.toString(arguments));
+
+                                /* get response of the server*/
+                                ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
+                                try {
+                                    Object result = input.readObject();
+                                    if (result instanceof Throwable) {
+                                        throw (Throwable)result;
+                                    }
+                                    System.out.println("\nClient recieves the reponse ： ");
+                                    System.out.println("result : " + result);
+                                    return result;
+                                } finally {
+                                    input.close();
+                                }
+                            } finally {
+                                   output.close();
+                            }
+                    } finally {
+                        socket.close();
+                    }
+                }
+            });
 ```
 
